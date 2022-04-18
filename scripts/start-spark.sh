@@ -1,0 +1,1 @@
+spark-submit --class bdtc.lab2.SparkSQLApplication --master local --deploy-mode client --executor-memory 1g --name wordcount --conf "spark.app.id=SparkSQLApplication" /root/.m2/repository/bdtc/lab2/1.0-SNAPSHOT/lab2-1.0-SNAPSHOT-jar-with-dependencies.jar hdfs://127.0.0.1:9000/user/root/messages11 output22
