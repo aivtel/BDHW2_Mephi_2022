@@ -2,6 +2,10 @@ package bdtc.lab2;
 
 import java.io.Serializable;
 
+/**
+    * Класс элемента словаря группа-пользователь
+ */
+
 public class DictEntity implements Serializable {
     private String userName;
 

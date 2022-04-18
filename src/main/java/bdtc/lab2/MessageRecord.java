@@ -3,6 +3,10 @@ package bdtc.lab2;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+    * Класс записи сообщения с добавленной группой
+ */
+
 @Data
 @AllArgsConstructor
 public class MessageRecord {

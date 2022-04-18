@@ -16,6 +16,11 @@ import org.json.*;
 @Slf4j
 public class MessageCounter {
 
+/**
+    * загружаем джейсон со словарем какой пользователь к какой группе относится. 
+    * json предварительно генерируем с помощью generate.py в корневой папке
+ */
+
     public static JSONArray loadJsonFromFile() throws Exception {
         String pathToJson = "/root/lab2/dict.json";
         File f = new File(pathToJson);
@@ -27,6 +32,10 @@ public class MessageCounter {
         }
         return null;
     }
+
+    /**
+        * Из загруженного джейсона формируем список
+     */
 
     public static ArrayList<DictEntity> readFromJsonArray(JSONArray dictJsonArray) {
         ArrayList<DictEntity> userGroups = new ArrayList<DictEntity>();
@@ -42,6 +51,9 @@ public class MessageCounter {
         return userGroups;
     }
 
+/**
+    * ищем группу пользователя из списка по совпадению его имени
+ */
     public static String findGroupNameByUserName(ArrayList<DictEntity> listDicts, String userName) {
         for(DictEntity entity: listDicts) {
             String name = entity.getUserName();
@@ -55,8 +67,13 @@ public class MessageCounter {
 
     public static JavaRDD<Row> countAvgMessageQuantityByGroup(Dataset<String> inputDataset, SparkSession sc) throws Exception {
         Dataset<String> words = inputDataset.map(s -> Arrays.toString(s.split("\n")), Encoders.STRING());
+        
         JSONArray dictJson = loadJsonFromFile();
         ArrayList<DictEntity> dictWitGroups = readFromJsonArray(dictJson);
+
+/**
+    * Составляем первую таблицу из сообщений, где в записи также будет фигугировать имя группы
+ */
         Dataset<MessageRecord> messageRecordDataset = words.map(s -> {
                     String[] recordFields = s.split(";");
                     String currentUserName = recordFields[0].substring(1);
@@ -69,7 +86,7 @@ public class MessageCounter {
         messageRecordDataset.show();
 
         /**
-         * Table with groupName - quantity of users
+         * Считаем количество пользователей в группах в отдельную таблицу
          */
         Dataset<DictEntity> dataDs = sc.createDataset(dictWitGroups, Encoders.bean(DictEntity.class));
         Dataset<Row> countUsersTable = dataDs.groupBy("groupName").count().toDF("groupName", "count");
@@ -77,7 +94,7 @@ public class MessageCounter {
         countUsersTable.show();
 
         /**
-         * Table with groupName - quantity of messages
+         * Считаем количество сообщений в отдельную таблицу
          */
         Dataset<Row> countMessageTable = messageRecordDataset.groupBy("groupName")
                 .count().as("countMess")
@@ -86,9 +103,17 @@ public class MessageCounter {
         log.info("===========COUNTED MESSAGE TABLE===========");
         countMessageTable.show();
 
+
+        /**
+            * Джой ним таблицы по имени группы
+         */
         Dataset<Row> joined = countUsersTable.join(countMessageTable, "groupName");
         log.info("===========JOINED TABLES=========== ");
         joined.show();
+
+        /**
+            * Делим количество сообщений на количество пользователей в группе в новую, итоговую таблицу. 
+         */
 
         Dataset<Row> finalDf = joined.withColumn("ratio", functions.col("countMess").divide(functions.col("count")));
         log.info("===========RESULT=========== ");

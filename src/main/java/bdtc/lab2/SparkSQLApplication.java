@@ -11,7 +11,7 @@ import org.apache.spark.sql.*;
 public class SparkSQLApplication {
 
     /**
-     * @param args - args[0]: входной файл, args[1] - выходная папка
+     * @param args - args[0]: входная папка, args[1] - выходная папка
      */
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
